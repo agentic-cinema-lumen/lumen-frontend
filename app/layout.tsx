@@ -14,18 +14,18 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://lumen-greenlight.geoaxis.chatgpt.site'),
-  title: 'Lumen — Know what moves an audience',
-  description: 'AI-powered creative and market intelligence for film and television.',
+  title: 'Lumen — Find the signal before the spotlight',
+  description: 'Gemini-orchestrated, Parallel-grounded creative intelligence for film and television.',
   openGraph: {
-    title: 'Lumen — Know what moves an audience',
-    description: 'AI-powered creative and market intelligence for film and television.',
-    images: ['/lumen-concept-social.png'],
+    title: 'Lumen — Find the signal before the spotlight',
+    description: 'Gemini-orchestrated, Parallel-grounded creative intelligence for film and television.',
+    images: ['/og.png'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lumen — Know what moves an audience',
-    description: 'AI-powered creative and market intelligence for film and television.',
-    images: ['/lumen-concept-social.png'],
+    title: 'Lumen — Find the signal before the spotlight',
+    description: 'Gemini-orchestrated, Parallel-grounded creative intelligence for film and television.',
+    images: ['/og.png'],
   },
 };
 
