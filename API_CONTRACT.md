@@ -7,3 +7,5 @@ The adjacent `agentic-cinema-hack` project supplies reusable backend building bl
 Training is not part of the producer UI. `GET /v1/diagnostics/model` is an internal diagnostics endpoint for trainer health, active model version, latest run, feature count, and evaluation metrics.
 
 The OpenAPI source is `openapi/lumen-api.yaml`. The runnable Bruno collection is under `bruno/lumen-api`; select the `local` environment and point `baseUrl` at the backend mock. Bruno is useful now for contract-driven mock development; the frontend can later replace its local simulation with the same request and response shapes.
+
+The proposed visual architecture is in `ARCHITECTURE_MERMAID.md` (with a plain-text fallback in `ARCHITECTURE_ASCII.md`).
