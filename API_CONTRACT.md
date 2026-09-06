@@ -9,3 +9,9 @@ Training is not part of the producer UI. `GET /v1/diagnostics/model` is an inter
 The OpenAPI source is `openapi/lumen-api.yaml`. The runnable Bruno collection is under `bruno/lumen-api`; select the `local` environment and point `baseUrl` at the backend mock. Bruno is useful now for contract-driven mock development; the frontend can later replace its local simulation with the same request and response shapes.
 
 The proposed visual architecture is in `ARCHITECTURE_MERMAID.md` (with a plain-text fallback in `ARCHITECTURE_ASCII.md`).
+
+## Generic progress events
+
+`GET /v1/predictions/{predictionId}/events` is an SSE stream for the progress screen. It deliberately exposes only operational state: `job.started`, `agent.started`, `agent.progress`, `agent.completed`, `agent.failed`, `job.completed`, and `job.failed`. Each event carries an opaque `agentId` (for example `agent-x`), status, optional 0–100 progress, a short operational message, and an optional `graph` snapshot of nodes and dependency edges. It must not contain agent findings, prompts, search results, model reasoning, or prediction explanations; those belong to the final prediction response.
+
+The frontend can render any number of agents without knowing their roles. It should reconnect with `Last-Event-ID`, and fall back to polling a prediction status endpoint if SSE is unavailable. The current browser animation is a temporary mock of this event stream.

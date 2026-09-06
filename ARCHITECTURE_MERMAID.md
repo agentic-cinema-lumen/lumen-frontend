@@ -71,4 +71,6 @@ The run is simulated in the browser today. The displayed result is fixture data 
 5. Frontend replaces the browser timer and fixture result with the real request, progress events, and response.
 6. Backend exposes `GET /v1/diagnostics/model` behind restricted authentication for trainer/model health.
 
+For the progress screen, add `GET /v1/predictions/{predictionId}/events` as a generic SSE stream. The UI only renders job state (Agent X/Y, status, progress, and optional dependency graph); it does not render agent findings or reasoning until the final prediction response arrives.
+
 Bruno can exercise steps 1 and 6 immediately against a local mock server using the collection in `bruno/lumen-api`.

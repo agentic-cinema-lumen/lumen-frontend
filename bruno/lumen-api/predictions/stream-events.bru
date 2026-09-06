@@ -1,0 +1,16 @@
+meta {
+  name: Stream generic job progress
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/predictions/00000000-0000-0000-0000-000000000001/events
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: text/event-stream
+  Cache-Control: no-cache
+}

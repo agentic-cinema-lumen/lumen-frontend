@@ -39,6 +39,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ModelDiagnostics'
+  /v1/predictions/{predictionId}/events:
+    get:
+      summary: Stream generic job progress
+      description: Server-sent events containing status only. No findings, prompts, model reasoning, or search content are exposed here.
+      operationId: streamPredictionEvents
+      parameters:
+        - name: predictionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: Last-Event-ID
+          in: header
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: SSE stream of generic job events
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/JobEvent'
+        '404': { description: Prediction not found }
 components:
   schemas:
     PredictionRequest:
@@ -118,3 +140,39 @@ components:
             hitPrecision: { type: number }
             missPrecision: { type: number }
             calibrationError: { type: number }
+    JobEvent:
+      type: object
+      required: [eventId, predictionId, type, status, timestamp]
+      properties:
+        eventId: { type: string }
+        predictionId: { type: string, format: uuid }
+        timestamp: { type: string, format: date-time }
+        type: { type: string, enum: [job.started, agent.started, agent.progress, agent.completed, agent.failed, job.completed, job.failed] }
+        status: { type: string, enum: [queued, running, completed, failed] }
+        agentId: { type: string, description: Opaque identifier such as agent-x; never encode business logic in the client }
+        label: { type: string, description: Optional display label such as Agent X }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        message: { type: string, description: Short operational status only, not a finding }
+        graph:
+          $ref: '#/components/schemas/ProgressGraph'
+    ProgressGraph:
+      type: object
+      description: Optional current execution graph for visualizing job dependencies.
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            required: [id, status]
+            properties:
+              id: { type: string }
+              label: { type: string }
+              status: { type: string, enum: [queued, running, completed, failed] }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to]
+            properties:
+              from: { type: string }
+              to: { type: string }
