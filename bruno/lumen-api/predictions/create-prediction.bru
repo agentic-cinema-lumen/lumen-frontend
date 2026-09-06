@@ -1,0 +1,29 @@
+meta {
+  name: Create prediction
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/predictions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  X-Client: lumen-studio
+}
+
+body:json {
+  {
+    "story": "After the sun begins erasing human memories, a reclusive archivist discovers an underground library where every forgotten life is still playing.",
+    "medium": "Feature film",
+    "targetGeography": "North America",
+    "classifications": {
+      "genre": "Sci-fi drama",
+      "audience": "Adults 25-44"
+    },
+    "materials": []
+  }
+}

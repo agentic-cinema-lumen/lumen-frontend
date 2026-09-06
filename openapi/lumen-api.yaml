@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: Lumen Prediction API
+  version: 0.1.0
+  description: Predicts whether a film project is more likely to be a hit or a miss, with evidence and agent diagnostics.
+servers:
+  - url: http://localhost:8787
+    description: Local backend mock
+paths:
+  /v1/predictions:
+    post:
+      summary: Analyze a film project
+      operationId: createPrediction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequest'
+      responses:
+        '200':
+          description: Hit-or-miss prediction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+        '400': { description: Invalid submission }
+        '413': { description: Submission too large }
+        '429': { description: Rate limited }
+  /v1/diagnostics/model:
+    get:
+      summary: Inspect model and training diagnostics
+      description: Internal diagnostics only; never shown in the producer-facing studio.
+      operationId: getModelDiagnostics
+      responses:
+        '200':
+          description: Current trainer and model health
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelDiagnostics'
+components:
+  schemas:
+    PredictionRequest:
+      type: object
+      required: [story, medium, targetGeography]
+      properties:
+        story: { type: string, minLength: 20, maxLength: 2000 }
+        medium: { type: string, enum: [Feature film, TV series, Limited series, Documentary] }
+        targetGeography: { type: string, enum: [North America, United Kingdom, Nordics, Western Europe, Global streaming] }
+        classifications:
+          type: object
+          additionalProperties: { type: string }
+          description: Optional structured tags such as genre, rating, budget band, or audience.
+        materials:
+          type: array
+          maxItems: 30
+          items:
+            $ref: '#/components/schemas/Material'
+    Material:
+      type: object
+      required: [kind, uri, mimeType]
+      properties:
+        kind: { type: string, enum: [script, frame, cast, concept_art, trailer, other] }
+        uri: { type: string, format: uri, description: Signed or project-scoped object URL }
+        mimeType: { type: string }
+        sha256: { type: string }
+    PredictionResponse:
+      type: object
+      required: [predictionId, outcome, score, confidence, agents, evidence]
+      properties:
+        predictionId: { type: string, format: uuid }
+        outcome: { type: string, enum: [hit, miss, inconclusive] }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        summary: { type: string }
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentResult'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evidence'
+        model:
+          type: object
+          properties:
+            modelId: { type: string }
+            version: { type: string }
+    AgentResult:
+      type: object
+      required: [agentId, status, finding]
+      properties:
+        agentId: { type: string, enum: [story, audience, market, visual] }
+        status: { type: string, enum: [complete, partial, failed] }
+        finding: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        sources: { type: array, items: { type: string, format: uri } }
+    Evidence:
+      type: object
+      required: [title, statement, sourceType]
+      properties:
+        title: { type: string }
+        statement: { type: string }
+        sourceType: { type: string, enum: [submission, parallel_search, model_signal] }
+        sourceUrl: { type: string, format: uri }
+    ModelDiagnostics:
+      type: object
+      required: [trainerStatus, activeModel, lastTrainingRun]
+      properties:
+        trainerStatus: { type: string, enum: [healthy, running, degraded, failed] }
+        activeModel: { type: string }
+        lastTrainingRun: { type: string, format: date-time }
+        featureCount: { type: integer }
+        evaluation:
+          type: object
+          properties:
+            hitPrecision: { type: number }
+            missPrecision: { type: number }
+            calibrationError: { type: number }
