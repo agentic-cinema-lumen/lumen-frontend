@@ -30,7 +30,7 @@ images:
 substitutions:
   _REGION: europe-north1
   _REPOSITORY: lumen-images
-  _SERVICE: lumen
+  _SERVICE: lumen-real
   # Configure these in the Cloud Build trigger or gcloud submit command.
   # NEXT_PUBLIC_* values are intentionally build-time values for this client branch.
   _NEXT_PUBLIC_API_URL: https://agentic-cinema-hack-git-556431509482.europe-west1.run.app
