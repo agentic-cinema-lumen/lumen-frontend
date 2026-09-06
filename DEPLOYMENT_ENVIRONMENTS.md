@@ -18,9 +18,10 @@ gcloud secrets add-iam-policy-binding lumen-api-key \
 Then deploy this branch as `lumen-real`. No key is stored in Git or in trigger
 substitutions.
 
-For a mock deployment, override `_SERVICE=lumen-mock` and
-`_NEXT_PUBLIC_LUMEN_MODE=mock`. Mock mode uses the built-in deterministic stream
-simulator and does not call the API; it does not need the secret.
+For a mock deployment, use `cloudbuild.mock.yaml`. It deploys `lumen-mock`,
+builds with `NEXT_PUBLIC_LUMEN_MODE=mock`, and does not read the production
+secret. Mock mode uses the built-in deterministic stream simulator and does not
+call the API.
 
 The key is visible to browsers by design for this public-key API. Do not reuse
 this configuration for a private credential. A private key should instead be
