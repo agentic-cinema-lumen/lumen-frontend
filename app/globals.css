@@ -42,6 +42,7 @@ h1,h2,.g-brand b,.outcome-value{font-family:var(--font-display),var(--font-ui),s
 .team-card b{font-family:var(--font-display),var(--font-ui),sans-serif;font-size:15px;font-weight:600;letter-spacing:-.015em}
 .team-card small{margin-top:5px;font-size:11px;letter-spacing:.01em}
 .team-card>svg{width:16px}
+.architecture-summary{max-width:700px;margin:22px 0 0;color:#626a79;font-size:16px;line-height:1.7}
 
 /* IMAX-scale team feature */
 .team-section{display:block;padding-block:120px}
