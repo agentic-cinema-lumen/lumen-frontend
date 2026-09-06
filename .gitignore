@@ -38,3 +38,8 @@ next-env.d.ts
 /work/
 /.gcloud/
 /.tools/
+
+# Local source portraits; generated, optimized avatars are published instead.
+/public/hatim.jpeg
+/public/melvin.jpeg
+/public/niklas.jpeg

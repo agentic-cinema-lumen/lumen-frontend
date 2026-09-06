@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Bot, BrainCircuit, Check, Cloud, Database, Film, Gauge, GitBranch, Layers3, Search, ShieldCheck, Sparkles, UserRound } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, ArrowRight, BrainCircuit, Check, Cloud, Database, Film, Gauge, GitBranch, Layers3, Search, ShieldCheck, Sparkles } from 'lucide-react';
 
 const team = [
-  { name: 'Niklas Norinder', initials: 'NN', href: 'https://www.linkedin.com/in/niklas-norinder/', color: 'blue' },
-  { name: 'Melvin Palmquist', initials: 'MP', href: 'https://www.linkedin.com/in/melvin-palmquist-95345524a/', color: 'red' },
-  { name: 'Shahzada Hatim', initials: 'SH', href: 'https://www.linkedin.com/in/shahzadahatim/', color: 'green' },
+  { name: 'Niklas Norinder', image: '/team/niklas-avatar.webp', href: 'https://www.linkedin.com/in/niklas-norinder/', color: 'blue' },
+  { name: 'Melvin Palmquist', image: '/team/melvin-avatar.webp', href: 'https://www.linkedin.com/in/melvin-palmquist-95345524a/', color: 'red' },
+  { name: 'Shahzada Hatim', image: '/team/hatim-avatar.webp', href: 'https://www.linkedin.com/in/shahzadahatim/', color: 'green' },
 ];
 
 export default function AboutPage(){
@@ -33,7 +34,7 @@ export default function AboutPage(){
 
     <section className="compliance-section"><div><p className="kicker">BUILT FOR AGENTIC CINEMA</p><h2>The architecture follows the rules.</h2></div><div className="compliance-grid"><Rule title="Gemini + Agent Builder" text="The multi-agent workflow is orchestrated on Gemini Enterprise Agent Platform."/><Rule title="Parallel at runtime" text="The Market Agent calls Parallel Search API for live evidence—not merely during development."/><Rule title="Google-only AI" text="Model training, multimodal understanding and inference stay within approved Google Cloud AI services."/><Rule title="Auditable workflow" text="Every step is deterministic, observable and reproducible from its source evidence."/></div></section>
 
-    <section className="team-section"><div><p className="kicker">THE TEAM</p><h2>Built in Stockholm.<br/>Made for the screen.</h2><p>Three builders working across product, cinema, data and engineering.</p></div><div className="team-grid">{team.map(member=><a href={member.href} target="_blank" rel="noreferrer" key={member.name} className="team-card"><span className={member.color}>{member.initials}</span><div><b>{member.name}</b><small>Co-creator · Stockholm</small></div><ArrowRight/></a>)}</div></section>
+    <section className="team-section"><div><p className="kicker">THE TEAM</p><h2>Built in Stockholm.<br/>Made for the screen.</h2><p>Three builders working across product, cinema, data and engineering.</p></div><div className="team-grid">{team.map(member=><a href={member.href} target="_blank" rel="noreferrer" key={member.name} className="team-card"><span className={`team-avatar ${member.color}`}><Image src={member.image} alt={`${member.name}, Lumen co-creator`} width={72} height={72}/></span><div><b>{member.name}</b><small>Co-creator · Stockholm</small></div><ArrowRight/></a>)}</div></section>
     <footer className="about-footer"><div className="g-brand"><span className="lumen-glyph"><i/><i/><i/><i/></span><b>Lumen</b></div><p>Built for the Agentic Cinema Hackathon · Parallel track</p><Link href="/">Open intelligence studio <ArrowRight/></Link></footer>
   </main>;
 }
