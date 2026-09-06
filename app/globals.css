@@ -98,3 +98,68 @@ html,body{background:#f5f3ee;color:#151b2b}
 .team-card>span.team-avatar{background:linear-gradient(145deg,#6e8cf3,#7857b8,#d89b5e)}
 @media(max-width:1100px){.studio-layout{grid-template-columns:210px 1fr}.g-header{grid-template-columns:210px 1fr 240px}.agent-node{width:175px}}
 @media(max-width:750px){.agent-node{width:158px}.studio-heading h1{font-size:clamp(38px,11vw,52px)}.about-hero>p:not(.kicker){font-size:16px}}
+
+/* ==========================================================================
+   Lumen Prediction Engine Live UI & Honesty Extensions
+   ========================================================================== */
+.model-diag-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #d0d7de;border-radius:999px;background:#f6f8fa;color:#444d56;font-size:11px;font-weight:600}
+.model-diag-badge i{width:7px;height:7px;border-radius:50%;background:#2da44e}
+.model-diag-badge.offline i{background:#cf222e}
+.model-diag-badge.running i{background:#bf8700;animation:pulse 1.2s infinite}
+
+.benchmark-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding:10px 14px;border:1px dashed #cbd5e1;border-radius:12px;background:rgba(255,255,255,.6)}
+.benchmark-bar span{font-size:11px;font-weight:600;color:#64748b}
+.benchmark-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e293b;font-size:11px;font-weight:500;transition:.15s}
+.benchmark-btn:hover{background:#f1f5f9;border-color:#94a3b8}
+
+.file-chips-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.file-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #d0d7de;border-radius:8px;background:#ffffff;box-shadow:0 1px 3px rgba(0,0,0,.04);font-size:12px}
+.file-chip svg{width:14px;height:14px;color:#0969da}
+.file-chip .kind-tag{padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.file-chip .kind-tag.script{background:#ddf4ff;color:#0969da}
+.file-chip .kind-tag.frame{background:#dafbe1;color:#1a7f37}
+.file-chip .kind-tag.other{background:#f6f8fa;color:#57606a}
+.file-chip button{display:flex;align-items:center;border:0;background:none;padding:2px;color:#8c959f;border-radius:4px;transition:.15s}
+.file-chip button:hover{color:#cf222e;background:#ffebe9}
+
+.live-stage-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.live-stage-badge.started{background:#e0f2fe;color:#0369a1}
+.live-stage-badge.ingestion{background:#ede9fe;color:#6d28d9}
+.live-stage-badge.research{background:#fef3c7;color:#b45309}
+.live-stage-badge.quant_oracle{background:#e0e7ff;color:#4338ca}
+.live-stage-badge.synthesis{background:#fce7f3;color:#be185d}
+.live-stage-badge.finalizing{background:#dcfce7;color:#15803d}
+
+.sleuth-log-card{max-width:920px;margin:22px auto;border:1px solid #1f2937;border-radius:14px;background:#0d1117;color:#c9d1d9;overflow:hidden;box-shadow:0 16px 36px rgba(0,0,0,.25)}
+.sleuth-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#161b22;border-bottom:1px solid #21262d;font-size:11px;font-weight:600}
+.sleuth-header div{display:flex;align-items:center;gap:6px}
+.sleuth-header i{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:pulse 1s infinite}
+.sleuth-body{max-height:160px;overflow-y:auto;padding:12px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;line-height:1.6}
+.sleuth-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.sleuth-item .agent-tag{color:#58a6ff;font-weight:600;flex-shrink:0}
+.sleuth-item .tool-tag{color:#d29922;font-weight:600;flex-shrink:0}
+.sleuth-item .query-text{color:#7ee787;word-break:break-word}
+.sleuth-item .summary-text{color:#8b949e;margin-top:2px}
+
+.honesty-callout{display:flex;align-items:flex-start;gap:14px;margin-top:20px;padding:16px 20px;border:1px solid #f97316;border-radius:14px;background:#fff7ed;color:#9a3412}
+.honesty-callout svg{width:20px;height:20px;flex-shrink:0;color:#ea580c;margin-top:2px}
+.honesty-callout b{display:block;font-size:13px;font-weight:700;margin-bottom:4px;color:#9a3412}
+.honesty-callout p{margin:0;font-size:12px;line-height:1.6;color:#c2410c}
+
+.agent-status-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.agent-status-pill.complete{background:#dafbe1;color:#1a7f37}
+.agent-status-pill.partial{background:#fff8c5;color:#9a6700}
+.agent-status-pill.failed{background:#ffebe9;color:#cf222e}
+
+.outcome-pill.hit{background:#dcfce7;color:#15803d}
+.outcome-pill.hit i{background:#16a34a}
+.outcome-pill.miss{background:#fee2e2;color:#b91c1c}
+.outcome-pill.miss i{background:#dc2626}
+.outcome-pill.inconclusive{background:#fef3c7;color:#b45309}
+.outcome-pill.inconclusive i{background:#d97706}
+
+.evidence-source-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.evidence-source-tag.submission{background:#e0f2fe;color:#0369a1}
+.evidence-source-tag.parallel_search{background:#fef3c7;color:#b45309}
+.evidence-source-tag.model_signal{background:#ede9fe;color:#6d28d9}
+
