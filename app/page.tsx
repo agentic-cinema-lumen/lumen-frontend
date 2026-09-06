@@ -40,7 +40,7 @@ export default function Home() {
   const run = async () => {
     setProgress(0); setResult(null); setError(null); setView('run');
     try {
-      setResult(await predict({ story: script, medium: format, targetGeography: market }));
+      setResult(await predict({ story: script, medium: format, targetGeography: market }, files));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setView('brief');
@@ -62,7 +62,7 @@ export default function Home() {
           <div className="agent-map" aria-label="Four AI agents analyze evidence in parallel">
             <svg className="agent-lines" viewBox="0 0 640 300" preserveAspectRatio="none" aria-hidden="true"><path d="M320 150 C235 150 225 55 120 55" /><path d="M320 150 C405 150 415 55 520 55" /><path d="M320 150 C235 150 225 245 120 245" /><path d="M320 150 C405 150 415 245 520 245" /></svg>
             {agents.map((agent,index) => { const Icon = agent.icon; return <div className={`agent-node node-${index+1} ${agent.color}`} key={agent.id}><span><Icon /></span><div><b>{agent.name}</b><small>{agent.job}</small></div></div>; })}
-            <button className="source-core" onClick={() => fileRef.current?.click()}><span className="core-glow"><Upload /></span><b>Add creative material</b><small>Script, frames, cast or concept art</small><em>{files.length ? `${files.length} file${files.length > 1 ? 's' : ''} connected` : 'Browse files'}</em><input ref={fileRef} type="file" multiple className="sr-only" accept="image/*,.pdf,.doc,.docx" onChange={(e) => setFiles(Array.from(e.target.files ?? []))} /></button>
+            <button className="source-core" onClick={() => fileRef.current?.click()}><span className="core-glow"><Upload /></span><b>Add creative material</b><small>Script, frames, cast or concept art</small><em>{files.length ? `${files.length} file${files.length > 1 ? 's' : ''} connected` : 'Browse files'}</em><input ref={fileRef} type="file" multiple className="sr-only" accept="image/*,.txt,.fountain,text/plain,.pdf,.doc,.docx" onChange={(e) => setFiles(Array.from(e.target.files ?? []))} /></button>
           </div>
           <div className="signal-strip"><span><i className="g-blue" /> Parallel agent analysis</span><span><i className="g-red" /> Evidence-linked reasoning</span><span><i className="g-yellow" /> Live market context</span><span><i className="g-green" /> Confidence-aware output</span></div>
         </div>
