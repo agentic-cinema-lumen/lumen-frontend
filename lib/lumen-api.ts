@@ -125,6 +125,11 @@ export function getApiKey(): string {
   return '';
 }
 
+/** Build-time mode used to create a deterministic mock deployment. */
+export function isMockMode(): boolean {
+  return typeof process !== 'undefined' && process.env.NEXT_PUBLIC_LUMEN_MODE === 'mock';
+}
+
 /**
  * Encode a browser File into a base64 Data URI
  */
@@ -255,6 +260,10 @@ export async function streamPrediction(
   callbacks: StreamCallbacks,
   abortSignal?: AbortSignal
 ): Promise<void> {
+  if (isMockMode()) {
+    await simulatePredictionStream(request, callbacks, abortSignal);
+    return;
+  }
   const apiBase = getApiBaseUrl();
   const apiKey = getApiKey();
 
