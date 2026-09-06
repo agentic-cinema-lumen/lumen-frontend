@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, ChevronDown, Clapperboard, FileText, Film, Globe2, Image as ImageIcon, RefreshCw, Search, Sparkles, Target, TrendingUp, Upload, Users, WandSparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { predict, type Prediction } from '@/lib/api';
 
 const agents = [
   { id: 'story', name: 'Story intelligence', job: 'Narrative & character', color: 'blue', icon: FileText },
@@ -19,19 +20,33 @@ export default function Home() {
   const [format, setFormat] = useState('Feature film');
   const [market, setMarket] = useState('North America');
   const [files, setFiles] = useState<File[]>([]);
+  const [result, setResult] = useState<Prediction | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Creep to 90 while the agents run, finish only once the API answers.
   useEffect(() => {
     if (view !== 'run') return;
-    const timer = window.setInterval(() => setProgress((p) => {
-      if (p >= 100) { window.clearInterval(timer); window.setTimeout(() => setView('result'), 500); return 100; }
-      return p + 2;
-    }), 65);
+    const timer = window.setInterval(() => setProgress((p) => Math.min(p + 2, result ? 100 : 90)), 65);
     return () => window.clearInterval(timer);
-  }, [view]);
+  }, [view, result]);
 
-  const run = () => { setProgress(0); setView('run'); };
-  const reset = () => { setProgress(0); setView('brief'); };
+  useEffect(() => {
+    if (view !== 'run' || !result || progress < 100) return;
+    const t = window.setTimeout(() => setView('result'), 400);
+    return () => window.clearTimeout(t);
+  }, [view, result, progress]);
+
+  const run = async () => {
+    setProgress(0); setResult(null); setError(null); setView('run');
+    try {
+      setResult(await predict({ story: script, medium: format, targetGeography: market }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setView('brief');
+    }
+  };
+  const reset = () => { setProgress(0); setResult(null); setError(null); setView('brief'); };
 
   return <main className="app-shell">
     <Header />
@@ -55,12 +70,12 @@ export default function Home() {
           <label className="story-field"><span><b>Story or concept</b><small>{script.length} / 2,000</small></span><textarea value={script} onChange={(e) => setScript(e.target.value)} maxLength={2000} /></label>
           <div className="context-fields"><Select label="Medium" icon={<Clapperboard />} value={format} setValue={setFormat} options={['Feature film','TV series','Limited series','Documentary']} /><Select label="Target geography" icon={<Globe2 />} value={market} setValue={setMarket} options={['North America','United Kingdom','Nordics','Western Europe','Global streaming']} /></div>
         </div>
-        <div className="run-row"><span>Your materials stay within the project workspace.</span><Button className="run-button" disabled={!script.trim()} onClick={run}><Sparkles /> Run constellation <ArrowRight /></Button></div>
+        <div className="run-row"><span>{error ?? 'Your materials stay within the project workspace.'}</span><Button className="run-button" disabled={!script.trim()} onClick={run}><Sparkles /> Run constellation <ArrowRight /></Button></div>
       </section>
       <aside className="evidence-rail"><div className="evidence-head"><p className="kicker">LIVE CONTEXT</p><span>Ready</span></div><h2>What Lumen will look for</h2><Evidence icon={<TrendingUp />} title="Demand signals" text="Comparable titles, audience interest and category momentum." /><Evidence icon={<Target />} title="Positioning gaps" text="Where the concept feels distinct—or disappears into the market." /><Evidence icon={<Zap />} title="Execution risk" text="Creative choices most likely to move the prediction." /><Link className="architecture-link" href="/about">Explore the full architecture <ArrowRight /></Link><div className="partner-lockup"><span>TRACK PARTNER</span><b>Parallel</b><small>Live web intelligence via Search API</small></div></aside>
     </section>}
     {view === 'run' && <RunView progress={progress} format={format} market={market} />}
-    {view === 'result' && <ResultView reset={reset} market={market} />}
+    {view === 'result' && result && <ResultView reset={reset} market={market} format={format} result={result} />}
   </main>;
 }
 
@@ -72,4 +87,25 @@ function RunView({progress,format,market}:{progress:number;format:string;market:
   const done=Math.floor(progress/25); return <section className="run-screen"><div className="run-top"><p className="kicker">AGENT CONSTELLATION · LIVE</p><h1>Four perspectives.<br /><span>One calibrated signal.</span></h1><p>Gemini is orchestrating independent analysis while Parallel grounds the market agent in current evidence.</p></div><div className="live-constellation"><svg viewBox="0 0 800 420" preserveAspectRatio="none"><path d="M400 210 L160 90"/><path d="M400 210 L640 90"/><path d="M400 210 L160 330"/><path d="M400 210 L640 330"/></svg><div className="synthesis-core"><span>{progress}</span><small>SYNTHESIS</small></div>{agents.map((a,i)=>{const Icon=a.icon;const complete=i<done||progress===100;const active=i===done&&progress<100;return <div className={`live-agent live-${i+1} ${a.color} ${complete?'complete':''} ${active?'thinking':''}`} key={a.id}><span>{complete?<Check/>:<Icon/>}</span><div><b>{a.name}</b><small>{complete?'Signal delivered':active?'Investigating…':'Waiting'}</small></div>{active&&<i/>}</div>})}</div><div className="run-log"><div><span className="g-blue"/> Gemini agent orchestration</div><div><span className="g-yellow"/> Parallel Search API · live grounding</div><div><span className="g-green"/> Calibrated hit-or-miss signal</div><em>{format} · {market}</em></div></section>;
 }
 
-function ResultView({reset,market}:{reset:()=>void;market:string}){ return <section className="result-screen"><div className="result-header"><div><p className="kicker">CONSTELLATION COMPLETE</p><h1>The Last Archive</h1><p>Feature film · Sci-fi drama · {market}</p></div><Button variant="outline" onClick={reset}><RefreshCw /> New analysis</Button></div><div className="verdict-grid"><div className="verdict-main"><div className="prediction-row"><div className="prediction-score"><span>82</span><small>/100</small></div><div><span className="outcome-pill"><i/> STRONG POTENTIAL</span><h2>A clear concept with<br/><em>international reach.</em></h2></div></div><p className="verdict-summary">The premise is instantly legible, visually ownable and emotionally grounded. Its strongest path is premium streaming, led by the relationship rather than the mythology.</p><div className="confidence-band"><span>Prediction confidence</span><b>87%</b><div><i/></div><small>High agreement across 4 agents · grounded in 38 external signals</small></div></div><div className="agent-consensus"><p className="kicker">AGENT CONSENSUS</p>{agents.map((a,i)=><div key={a.id}><span className={a.color}>{i===2?<Search/>:<Check/>}</span><div><b>{a.name}</b><small>{['Strong emotional engine','Clear 25–44 affinity','Category demand is rising','High campaign potential'][i]}</small></div><em>{[88,79,76,91][i]}</em></div>)}</div></div><div className="evidence-grid"><section><p className="kicker">WHY IT COULD WIN</p><h3>Signals that move the model</h3><article><b>01</b><div><h4>One-sentence clarity</h4><p>The memory-erasing sun is immediately understood and easy to carry into trailers, social clips and key art.</p></div></article><article><b>02</b><div><h4>Emotion crosses borders</h4><p>The archivist’s future creates a human question that remains meaningful across target geographies.</p></div></article></section><section><p className="kicker">MODEL WATCHOUT</p><h3>What changes the outcome</h3><article><b>−7</b><div><h4>Lore-first positioning</h4><p>Leading with world-building instead of the personal choice reduces predicted broad-audience conversion.</p></div></article><article><b>+9</b><div><h4>Character-led campaign</h4><p>A campaign focused on the forbidden future raises intent across all measured audience clusters.</p></div></article></section></div><div className="result-footer"><span><Sparkles/> Gemini reasoning</span><span><Search/> Parallel-grounded research</span><span><TrendingUp/> BigQuery ML prediction</span><Link href="/about">See system architecture <ArrowRight/></Link></div></section>; }
+function ResultView({reset,market,format,result}:{reset:()=>void;market:string;format:string;result:Prediction}){
+  const outcomeLabel={hit:'STRONG POTENTIAL',miss:'HIGH RISK',inconclusive:'INCONCLUSIVE'}[result.outcome];
+  const byId=new Map(result.agents.map(a=>[a.agentId,a]));
+  const claims=result.evidence.filter(e=>e.sourceType==='parallel_search');
+  const signals=result.evidence.filter(e=>e.sourceType==='model_signal');
+  return <section className="result-screen">
+    <div className="result-header"><div><p className="kicker">CONSTELLATION COMPLETE</p><h1>{result.summary?.split(' - ')[0] ?? outcomeLabel}</h1><p>{format} · {market} · model {result.model?.modelId ?? 'n/a'}</p></div><Button variant="outline" onClick={reset}><RefreshCw /> New analysis</Button></div>
+    <div className="verdict-grid">
+      <div className="verdict-main">
+        <div className="prediction-row"><div className="prediction-score"><span>{result.score}</span><small>/100</small></div><div><span className={`outcome-pill ${result.outcome}`}><i/> {outcomeLabel}</span><h2>{result.summary}</h2></div></div>
+        <p className="verdict-summary">{byId.get('audience')?.finding}</p>
+        <div className="confidence-band"><span>Prediction confidence</span><b>{Math.round(result.confidence*100)}%</b><div><i style={{width:`${result.confidence*100}%`}}/></div><small>{result.agents.filter(a=>a.status==='complete').length} of {result.agents.length} agents complete · {claims.length} external signals</small></div>
+      </div>
+      <div className="agent-consensus"><p className="kicker">AGENT CONSENSUS</p>{agents.map((a)=>{const r=byId.get(a.id as Prediction['agents'][number]['agentId']);const Icon=a.icon;return <div key={a.id}><span className={a.color}>{r?.status==='complete'?<Check/>:<Icon/>}</span><div><b>{a.name}</b><small>{r?.finding ?? 'No signal'}</small></div><em>{r?.score ?? '—'}</em></div>;})}</div>
+    </div>
+    <div className="evidence-grid">
+      <section><p className="kicker">AUDIENCE & MARKET EVIDENCE</p><h3>Signals grounded in live search</h3>{claims.length?claims.slice(0,4).map((e,i)=><article key={i}><b>{String(i+1).padStart(2,'0')}</b><div><h4>{e.title}</h4><p>{e.statement}</p>{e.sourceUrl&&<a href={e.sourceUrl} target="_blank" rel="noreferrer">Source <ArrowRight/></a>}</div></article>):<article><b>—</b><div><h4>No external claims</h4><p>The market agent returned no grounded claims for this submission.</p></div></article>}</section>
+      <section><p className="kicker">MODEL WATCHOUT</p><h3>What changes the outcome</h3>{signals.slice(0,4).map((e,i)=><article key={i}><b>{i+1}</b><div><h4>{e.title}</h4><p>{e.statement}</p></div></article>)}</section>
+    </div>
+    <div className="result-footer"><span><Sparkles/> Agent reasoning</span><span><Search/> Parallel-grounded research</span><span><TrendingUp/> Quant residual model</span><Link href="/about">See system architecture <ArrowRight/></Link></div>
+  </section>;
+}

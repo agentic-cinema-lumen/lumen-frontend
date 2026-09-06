@@ -43,3 +43,6 @@ next-env.d.ts
 /public/hatim.jpeg
 /public/melvin.jpeg
 /public/niklas.jpeg
+
+# generated typescript build info
+tsconfig.tsbuildinfo
