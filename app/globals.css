@@ -50,13 +50,13 @@ h1,h2,.g-brand b,.outcome-value{font-family:var(--font-display),var(--font-ui),s
 .team-section>div>p:last-child{max-width:620px;font-size:19px;line-height:1.65}
 .team-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:54px}
 .team-card{display:flex;align-items:flex-start;flex-direction:column;gap:22px;min-height:470px;padding:22px;border-radius:28px;background:linear-gradient(155deg,#fff 45%,#eef3ff);box-shadow:0 18px 50px rgba(28,39,60,.1)}
-.team-card>span.team-avatar{width:100%;height:auto;aspect-ratio:1;border-radius:22px;padding:3px}
-.team-avatar img{border-radius:19px}
+.team-card>span.team-avatar{display:block;width:100%;height:clamp(280px,24vw,380px);aspect-ratio:auto;border-radius:22px;padding:3px}
+.team-avatar img{display:block;width:100%!important;height:100%!important;max-width:none;object-fit:cover!important;object-position:center 32%;border-radius:19px}
 .team-card b{font-size:clamp(20px,2vw,26px)}
 .team-card small{font-size:13px}
 .team-card>svg{position:absolute;right:26px;bottom:27px;width:22px;height:22px}
 
-@media(max-width:900px){.team-grid{grid-template-columns:1fr}.team-card{min-height:0}.team-card>span.team-avatar{max-height:520px}.team-avatar img{object-position:center 32%}}
+@media(max-width:900px){.team-grid{grid-template-columns:1fr}.team-card{min-height:0}.team-card>span.team-avatar{height:clamp(300px,82vw,520px)}}
 
 /* Large-format desktop canvas */
 @media(min-width:1101px){
@@ -80,5 +80,20 @@ h1,h2,.g-brand b,.outcome-value{font-family:var(--font-display),var(--font-ui),s
   .problem-section,.agent-detail,.team-section{max-width:1440px;gap:130px;padding-block:120px}.architecture-section{padding:110px max(40px,calc((100vw - 1440px)/2))}.compliance-section{padding:100px max(40px,calc((100vw - 1440px)/2))}.about-footer{max-width:1440px;padding-block:42px}
   .problem-section h2,.architecture-heading h2,.agent-detail h2,.compliance-section h2{font-size:48px}.architecture-diagram{margin-top:58px}.arch-card,.parallel-card,.gemini-orchestrator,.output-card{padding:18px}.arch-card b,.parallel-card b,.gemini-orchestrator b{font-size:13px}.arch-card small,.parallel-card span,.gemini-orchestrator small,.output-card small{font-size:11px}.compliance-grid>div{padding:24px}.compliance-grid b{font-size:15px}.compliance-grid p{font-size:12px}
 }
+
+/* Producer palette: screening-room ink, warm paper, restrained signal color. */
+:root{--background:#f5f3ee;--foreground:#151b2b;--card:#fffdf9;--primary:#315ee8;--border:#dcdedc}
+html,body{background:#f5f3ee;color:#151b2b}
+.g-header{background:rgba(255,253,249,.92);border-color:#d9dce2}
+.studio-main{background:radial-gradient(circle at 58% 24%,rgba(78,111,232,.13) 0,transparent 35%),#f5f3ee}
+.project-rail,.evidence-rail{background:#fffdf9}
+.constellation-input,.story-field,.g-select,.verdict-main,.agent-consensus,.evidence-grid>section{background:rgba(255,253,249,.94)}
+.about-page{background:#fffdf9}
+.about-hero{background:radial-gradient(circle at 72% 30%,rgba(60,91,205,.18),transparent 27%),radial-gradient(circle at 88% 34%,rgba(214,144,76,.14),transparent 16%),#f5f3ee}
+.architecture-section{background:#f0eee8}
+.compliance-section{background:linear-gradient(145deg,#111827,#19233a);color:#f8f5ef}
+.team-section{background:linear-gradient(180deg,#fffdf9,#f3f0e9)}
+.team-card{border-color:#d5d9e3;background:linear-gradient(155deg,#fffdf9 42%,#e9edf8);box-shadow:0 20px 55px rgba(17,24,39,.12)}
+.team-card>span.team-avatar{background:linear-gradient(145deg,#6e8cf3,#7857b8,#d89b5e)}
 @media(max-width:1100px){.studio-layout{grid-template-columns:210px 1fr}.g-header{grid-template-columns:210px 1fr 240px}.agent-node{width:175px}}
 @media(max-width:750px){.agent-node{width:158px}.studio-heading h1{font-size:clamp(38px,11vw,52px)}.about-hero>p:not(.kicker){font-size:16px}}
