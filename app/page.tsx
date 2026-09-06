@@ -62,7 +62,12 @@ export default function Home() {
           <div className="agent-map" aria-label="Four AI agents analyze evidence in parallel">
             <svg className="agent-lines" viewBox="0 0 640 300" preserveAspectRatio="none" aria-hidden="true"><path d="M320 150 C235 150 225 55 120 55" /><path d="M320 150 C405 150 415 55 520 55" /><path d="M320 150 C235 150 225 245 120 245" /><path d="M320 150 C405 150 415 245 520 245" /></svg>
             {agents.map((agent,index) => { const Icon = agent.icon; return <div className={`agent-node node-${index+1} ${agent.color}`} key={agent.id}><span><Icon /></span><div><b>{agent.name}</b><small>{agent.job}</small></div></div>; })}
-            <button className="source-core" onClick={() => fileRef.current?.click()}><span className="core-glow"><Upload /></span><b>Add creative material</b><small>Script, frames, cast or concept art</small><em>{files.length ? `${files.length} file${files.length > 1 ? 's' : ''} connected` : 'Browse files'}</em><input ref={fileRef} type="file" multiple className="sr-only" accept="image/*,.txt,.fountain,text/plain,.pdf,.doc,.docx" onChange={(e) => setFiles(Array.from(e.target.files ?? []))} /></button>
+            <button className="source-core" onClick={() => fileRef.current?.click()}><span className="core-glow"><Upload /></span><b>Add creative material</b><small>Script, frames, cast or concept art</small><em title={files.map((f) => f.name).join(', ')}>{files.length ? describeFiles(files) : 'Browse files'}</em>{files.length > 0 && <span className="clear-files" onClick={(e) => { e.stopPropagation(); setFiles([]); }}>clear</span>}<input ref={fileRef} type="file" multiple className="sr-only" accept="image/*,.txt,.fountain,text/plain,.pdf,.doc,.docx" onChange={(e) => {
+            // ponytail: append instead of replace, de-duped by name+size, so picking a script then frames keeps both.
+            const picked = Array.from(e.target.files ?? []);
+            setFiles((prev) => [...prev, ...picked.filter((f) => !prev.some((p) => p.name === f.name && p.size === f.size))]);
+            e.target.value = ''; // let the same file be re-picked after a clear
+          }} /></button>
           </div>
           <div className="signal-strip"><span><i className="g-blue" /> Parallel agent analysis</span><span><i className="g-red" /> Evidence-linked reasoning</span><span><i className="g-yellow" /> Live market context</span><span><i className="g-green" /> Confidence-aware output</span></div>
         </div>
@@ -77,6 +82,14 @@ export default function Home() {
     {view === 'run' && <RunView progress={progress} format={format} market={market} />}
     {view === 'result' && result && <ResultView reset={reset} market={market} format={format} result={result} />}
   </main>;
+}
+
+// ponytail: one line of prose for the picked files, split by kind.
+function describeFiles(files: File[]) {
+  const frames = files.filter((f) => f.type.startsWith('image/')).length;
+  const scripts = files.length - frames;
+  return [scripts && `${scripts} script${scripts > 1 ? 's' : ''}`, frames && `${frames} frame${frames > 1 ? 's' : ''}`]
+    .filter(Boolean).join(', ');
 }
 
 function Header(){ return <header className="g-header"><Link className="g-brand" href="/"><span className="lumen-glyph"><i/><i/><i/><i/></span><b>Lumen</b></Link><nav><Link className="active" href="/">Studio</Link><Link href="/about">About & architecture</Link></nav><div className="header-side"><span className="google-cloud"><i className="gemini-mark">✦</i> Gemini Enterprise</span><button className="user-dot">SH</button></div></header>; }

@@ -98,3 +98,4 @@ html,body{background:#f5f3ee;color:#151b2b}
 .team-card>span.team-avatar{background:linear-gradient(145deg,#6e8cf3,#7857b8,#d89b5e)}
 @media(max-width:1100px){.studio-layout{grid-template-columns:210px 1fr}.g-header{grid-template-columns:210px 1fr 240px}.agent-node{width:175px}}
 @media(max-width:750px){.agent-node{width:158px}.studio-heading h1{font-size:clamp(38px,11vw,52px)}.about-hero>p:not(.kicker){font-size:16px}}
+.clear-files{margin-top:4px;color:#9aa0a6;font-size:8px;text-decoration:underline;cursor:pointer}
