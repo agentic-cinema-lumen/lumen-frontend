@@ -205,3 +205,37 @@ The optional graph is an execution/dependency graph, not an explanation graph. I
 ## Bottom line
 
 The coherent near-term build is a contract-driven producer workflow: accept multimodal creative input, launch generic observable agent jobs, use Parallel for current market evidence, invoke a versioned Google Cloud model, and return a calibrated hit/miss assessment with evidence. The current site proves the interaction and visual language. The adjacent repository provides much of the investigative and quantitative prototype. The central backend task is integrating those pieces behind the API and resolving the rating-residual-to-commercial-hit target gap.
+
+## Additional implementation detail pulled from the adjacent project
+
+### Ingestion and feature pipeline
+
+`shot_pipeline.py` and `scripts/run_shot_pipeline.py` process locally owned video and/or screenplay material. The pipeline uses shot extraction, midpoint keyframes, and aligned SRT/Whisper transcripts. Per-title outputs are `keyframes/shot_XXXX.jpg`, `shot_manifest.json`, `transcript.json`, and `episode_features.json` as the master feature store.
+
+`ScriptParser` detects INT/EXT/scene headings and character cues, then computes scene counts, dialogue/action word counts, estimated durations, dialogue velocity, and act/climax pacing. `FeatureExtractor` derives total duration, shot count, average/median shot length, shot-length variance, cuts per minute, pacing acceleration, words and lines per minute, dialogue-shot ratio, maximum silence, mean luminance, luminance variance, dark-frame ratio, contrast-related visual risk, season position, premiere/finale flags, and a historical genre/show baseline.
+
+The visual inspector samples images down to 100×100 for luminance calculations, detects underexposure and monotone-lighting flags, and can ask Gemini for a concise craft critique. Missing material receives neutral defaults rather than crashing.
+
+### Existing model behavior
+
+`QuantResidualModel` trains Ridge, Random Forest, or histogram gradient boosting regressors. It uses five-fold shuffled cross-validation, selects the lowest-CV-RMSE candidate, fits a final champion, persists it with joblib, and exposes feature importances. Its current target is `imdb_rating`, not commercial revenue or streaming success.
+
+`QuantOracle` loads the champion artifact for low-latency inference, fills missing features with benchmark medians, computes expected rating, residual delta, confidence interval, feature attributions, and rule-based vulnerabilities such as darkness, pacing, and dialogue risks. Production inference should load a versioned artifact rather than train in the request path.
+
+`AgenticQuantTrainer` asks an LLM agent to propose mathematical feature transformations, evaluates numeric expressions, retrains candidate architectures, rejects materially worse changes, records training history, and synthesizes a quantitative craft theory. This belongs in the internal training/diagnostics plane.
+
+### Existing agent and tool behavior
+
+`PreMortemAgent` has two modes: full script plus keyframes, and premise/logline plus moodboard. It combines script parsing, visual inspection, Parallel audience/trope research, comparable-title lookup, quant analysis, and a synthesized report. Its tool concepts include audience-claim search, frame reinspection, transcript/pacing drill-down, and rating-demographic lookups.
+
+`ParallelSearchClient` supports a live API path, deterministic disk caching keyed by query hash, and a realistic mock fallback when no API key is available. Normalized results contain title, URL, snippet, and published date. This is useful for Bruno/local development because the backend can run without spending search credits.
+
+`LLMClient` supports Gemini and a mock fallback (and contains an OpenAI fallback path in the prototype). For production, the intended provider is Gemini through approved Google Cloud services; credentials should remain server-side.
+
+### Verification and data discipline
+
+The adjacent project includes tests for movie loading, script parsing, Parallel Search, quant loops/oracle behavior, and pre-mortem behavior. It intentionally keeps copyrighted source video/raw frames out of the repository and expects users to run ingestion against media they own. The same rule should apply to Lumen uploads: store them in controlled project storage, do not commit them, and define retention/deletion policy.
+
+### First integration slice
+
+The first useful backend slice should accept the Lumen request shape, safely persist or reference uploaded material, parse text, inspect available images, run generic agent jobs with progress events, call Parallel in live or cached/mock mode, invoke Quant Oracle as an intermediate signal, return a clearly labeled calibrated outcome (or `inconclusive` if calibration is not defensible), and keep detailed training/model diagnostics restricted.
