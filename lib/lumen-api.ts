@@ -289,8 +289,10 @@ export async function streamPrediction(
   if (!response.ok) {
     let detail = `HTTP ${response.status}: ${response.statusText}`;
     try {
-      const errJson = await response.json();
-      if (errJson?.detail) detail = errJson.detail;
+      const errJson: unknown = await response.json();
+      if (errJson && typeof errJson === 'object' && 'detail' in errJson && typeof errJson.detail === 'string') {
+        detail = errJson.detail;
+      }
     } catch {
       // ignore
     }
