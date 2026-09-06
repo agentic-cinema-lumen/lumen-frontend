@@ -1,11 +1,13 @@
 steps:
   - name: gcr.io/cloud-builders/docker
+    secretEnv:
+      - LUMEN_PUBLIC_API_KEY
     args:
       - build
       - --build-arg
       - NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}
       - --build-arg
-      - NEXT_PUBLIC_LUMEN_API_KEY=${_NEXT_PUBLIC_LUMEN_API_KEY}
+      - NEXT_PUBLIC_LUMEN_API_KEY=$$LUMEN_PUBLIC_API_KEY
       - --tag
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID
       - .
@@ -31,9 +33,11 @@ substitutions:
   _REGION: europe-north1
   _REPOSITORY: lumen-images
   _SERVICE: lumen-real
-  # Configure these in the Cloud Build trigger or gcloud submit command.
-  # NEXT_PUBLIC_* values are intentionally build-time values for this client branch.
+  # Configure the URL in the Cloud Build trigger or gcloud submit command.
   _NEXT_PUBLIC_API_URL: https://agentic-cinema-hack-git-556431509482.europe-west1.run.app
-  _NEXT_PUBLIC_LUMEN_API_KEY: ''
 options:
   logging: CLOUD_LOGGING_ONLY
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/lumen-api-key/versions/latest
+      env: LUMEN_PUBLIC_API_KEY
