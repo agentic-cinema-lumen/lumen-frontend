@@ -1,18 +1,17 @@
 steps:
   - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
     secretEnv:
       - LUMEN_PUBLIC_API_KEY
     args:
-      - build
-      - --build-arg
-      - NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}
-      - --build-arg
-      - NEXT_PUBLIC_LUMEN_API_KEY=$$LUMEN_PUBLIC_API_KEY
-      - --build-arg
-      - NEXT_PUBLIC_LUMEN_MODE=${_NEXT_PUBLIC_LUMEN_MODE}
-      - --tag
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID
-      - .
+      - -ceu
+      - |
+        docker build \
+          --build-arg "NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}" \
+          --build-arg "NEXT_PUBLIC_LUMEN_API_KEY=$$LUMEN_PUBLIC_API_KEY" \
+          --build-arg "NEXT_PUBLIC_LUMEN_MODE=${_NEXT_PUBLIC_LUMEN_MODE}" \
+          --tag "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID" \
+          .
   - name: gcr.io/cloud-builders/docker
     args:
       - push
