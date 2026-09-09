@@ -1,76 +1,65 @@
-# Proposed Lumen architecture
+# Lumen architecture
+
+Lumen separates agentic ML training from runtime recommendations. Training produces a fixed model; the main runtime agent uses that model as a deterministic tool and decides which independent tool calls to execute concurrently.
+
+## 1. Agentic ML training
+
+The model is trained once today through an agent-guided pipeline. The training agent guides feature engineering, candidate training, evaluation and champion selection. Automated repeat training runs are a future capability, not a continuous process currently in operation.
+
+```mermaid
+flowchart LR
+  DATA[Historical film data and derived creative features]
+  FEATURES[Feature engineering]
+  TRAIN[Train candidate models]
+  EVAL[Evaluate and select champion]
+  MODEL[Versioned trained model and feature schema]
+  AGENT[Training agent]
+  DATA --> FEATURES --> TRAIN --> EVAL --> MODEL
+  AGENT -. guides .-> FEATURES
+  AGENT -. guides .-> TRAIN
+  AGENT -. guides .-> EVAL
+  EVAL -. refinement .-> FEATURES
+```
+
+The pipeline records evaluation metrics alongside the selected model version. Its model and feature schema become the runtime inference tool. Training is separate from user prediction requests.
+
+## 2. Runtime recommendations
+
+The main Gemini agent receives screenshots, frames, story text and project context through the Cloud Run prediction API. It extracts structured features, validates model inputs, and plans the tool calls needed for the request.
 
 ```mermaid
 flowchart TB
-  subgraph TRAINING[Internal model lifecycle — not shown in producer UI]
-    DATA[(Historical film data\nIMDb + derived craft features)]
-    TRAIN[Agentic model trainer\nGoogle Cloud / Vertex AI Pipelines]
-    ARTIFACT[(Versioned hit/miss model\nCloud Storage / Model Registry)]
-    METRICS[(Evaluation + training diagnostics)]
-    DATA --> TRAIN --> ARTIFACT
-    TRAIN --> METRICS
-  end
-
-  subgraph PRODUCER[Producer-facing workflow]
-    INPUT[Producer submits\nstory + images/frames + classifications\nmedium + target geography]
-    API[Cloud Run\nPrediction API]
-    RESULT[Hit / miss / inconclusive\nscore + confidence + evidence + why]
-    INPUT --> API
-  end
-
-  API --> ORCH[Gemini agent orchestrator\nGoogle Cloud]
-  ORCH --> STORY[Story agent\nscript + premise]
-  ORCH --> AUD[Audience agent\nsegments + affinity]
-  ORCH --> VIS[Visual agent\nframes + campaign]
-  ORCH --> MARKET[Market agent]
-  MARKET --> PARALLEL[Parallel Search API\ncomparables + demand + timing + audience context]
-  STORY --> CASE[(Investigation case file\nclaims + findings + sources)]
-  AUD --> CASE
-  VIS --> CASE
-  PARALLEL --> CASE
-  ARTIFACT --> INFER[Model inference tool]
-  CASE --> INFER
-  INFER --> RESULT
-  ORCH --> RESULT
-
-  subgraph DIAGNOSTICS[Restricted diagnostics]
-    DIAG[GET /v1/diagnostics/model]
-    DIAG --> METRICS
-    DIAG --> ARTIFACT
-  end
-
-  classDef google fill:#e8f0fe,stroke:#4285f4,color:#174ea6
-  classDef parallel fill:#fef7e0,stroke:#fbbc04,color:#8d5e00
-  classDef output fill:#e6f4ea,stroke:#34a853,color:#137333
-  class TRAIN,ARTIFACT,METRICS,API,ORCH,INFER,DIAG google
-  class PARALLEL parallel
-  class RESULT output
+  INPUT[Screenshots, frames, story text and project context]
+  API[Cloud Run prediction API]
+  EXTRACT[Main Gemini agent extracts structured features]
+  PLAN[Main agent selects tools and schedules calls]
+  MODEL[Trained ML model tool: deterministic inference]
+  COMPARE[Comparison tool: similar films and feature differences]
+  SEARCH[Parallel Search API: live market and audience evidence]
+  JOIN[Main agent joins selected tool results]
+  RESULT[Recommendations, reasons, evidence and uncertainty]
+  VERSION[Model version and feature schema from training]
+  INPUT --> API --> EXTRACT --> PLAN
+  PLAN -->|when selected| MODEL
+  PLAN -->|when selected| COMPARE
+  PLAN -->|when selected| SEARCH
+  VERSION -. loaded for inference .-> MODEL
+  MODEL --> JOIN
+  COMPARE --> JOIN
+  SEARCH --> JOIN
+  JOIN --> RESULT
 ```
 
-## Existing backend fit
+The branches represent tools available to the main agent, not a mandatory fixed set of calls. The LLM chooses which tools to call and which calls can run in parallel. Independent model, comparison and research calls may run concurrently once their inputs are ready; dependent calls wait for their prerequisites. The agent combines their results to form a recommendation.
 
-`agentic-cinema-hack` already provides the ingestion, Gemini visual inspection, Parallel Search client, agentic trainer, quant agent, and quant oracle pieces. The remaining backend boundary is the outcome adapter: its current oracle returns expected IMDb rating and craft residuals, while Lumen’s API must return a calibrated `hit`, `miss`, or `inconclusive` outcome.
+“Parallel Search” is the named research service. “Parallel calls” means concurrent execution chosen by the agent; these are separate concepts.
 
-## What the current UI implements
+The ML tool is deterministic for a fixed model version and validated feature input. Feature extraction, orchestration and recommendation synthesis are agentic, so the complete workflow is not described as deterministic. The model is not retrained during a recommendation request.
 
-The deployed UI is a realistic interaction mock, not a live inference client yet. It currently implements:
+### Backend mapping and output contract
 
-1. Producer inputs: story/concept text, medium, target geography, and multiple creative-material uploads.
-2. A four-agent progress experience: Story, Audience, Market, and Visual.
-3. A result view with score, confidence, agent findings, “why it could win,” and watchouts.
-4. Architecture and team explanation pages.
+The existing backend components described in this project map to these two sections: `agentic_trainer.py` and `quant_agent.py` handle training and champion selection; ingestion and visual inspection derive features; `oracle.py` provides model inference; and `parallel_search_client.py` retrieves research evidence. This diagram describes the agreed architecture, not verification that every backend connection is deployed.
 
-The run is simulated in the browser today. The displayed result is fixture data so the product flow can be reviewed before the backend exists.
+The existing oracle is described as returning expected IMDb rating and craft residuals. A commercial `hit`, `miss`, or `inconclusive` outcome still requires a defined success target and a calibrated outcome adapter. Expected rating must not be presented as commercial hit probability without that mapping.
 
-## What happens next
-
-1. Backend developer implements `POST /v1/predictions` from `openapi/lumen-api.yaml`.
-2. Backend stores uploads in a project-scoped bucket and returns signed or scoped material URIs.
-3. Gemini orchestrates the four agents; the Market agent calls Parallel Search.
-4. Backend invokes the versioned model through the inference tool and adds the calibrated hit/miss outcome adapter.
-5. Frontend replaces the browser timer and fixture result with the real request, progress events, and response.
-6. Backend exposes `GET /v1/diagnostics/model` behind restricted authentication for trainer/model health.
-
-For the progress screen, add `GET /v1/predictions/{predictionId}/events` as a generic SSE stream. The UI only renders job state (Agent X/Y, status, progress, and optional dependency graph); it does not render agent findings or reasoning until the final prediction response arrives.
-
-Bruno can exercise steps 1 and 6 immediately against a local mock server using the collection in `bruno/lumen-api`.
+The frontend has mock and API execution modes. See `API_CONTRACT.md` and `DEPLOYMENT_ENVIRONMENTS.md` for the integration and deployment details. Model diagnostics remain internal to the training/model lifecycle.

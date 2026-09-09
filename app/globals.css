@@ -163,3 +163,22 @@ html,body{background:#f5f3ee;color:#151b2b}
 .evidence-source-tag.parallel_search{background:#fef3c7;color:#b45309}
 .evidence-source-tag.model_signal{background:#ede9fe;color:#6d28d9}
 
+
+/* Separate the training pipeline from agent-directed runtime tool calls. */
+.architecture-lane{margin:28px auto 0;max-width:1440px}
+.architecture-lane-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.architecture-lane-heading h3{font-size:22px;margin:0;letter-spacing:-.025em}
+.architecture-lane-heading>span{font-size:13px;color:#526477}
+.architecture-lane-copy{max-width:960px;font-size:16px;line-height:1.7;color:#626a79}
+.architecture-lane .architecture-diagram{margin-top:20px;gap:10px;align-items:start}
+.architecture-lane .training-diagram{grid-template-columns:1fr 40px 1.3fr 40px 1fr}
+.architecture-lane .runtime-diagram{grid-template-columns:1fr 30px 1fr 30px 1.2fr 30px 1fr}
+.architecture-lane .arch-card,.architecture-lane .gemini-orchestrator,.architecture-lane .parallel-card{padding:16px}
+.architecture-lane .arch-card b,.architecture-lane .gemini-orchestrator b,.architecture-lane .parallel-card b{font-size:14px}
+.architecture-lane .arch-card small,.architecture-lane .gemini-orchestrator small,.architecture-lane .parallel-card span{font-size:13px;line-height:1.6;color:#626a79}
+.architecture-lane .loop-arrow,.architecture-lane .agent-note{font-size:12px;line-height:1.5}
+.architecture-lane .flow-arrow{align-self:center}
+.architecture-lane .flow-arrow span{font-size:12px;letter-spacing:0;text-transform:none}
+.model-handoff{max-width:1440px;margin:24px auto;color:#137333;font-size:14px}
+@media(max-width:1100px){.architecture-lane .runtime-diagram{display:flex;flex-direction:column}.architecture-lane .runtime-diagram>.arch-column{width:100%}.architecture-lane .runtime-diagram>.flow-arrow{display:block;transform:none}.architecture-lane .runtime-diagram>.flow-arrow svg{transform:rotate(90deg)}}
+@media(max-width:750px){.architecture-lane .training-diagram{display:block}.architecture-lane .flow-arrow{transform:none}.architecture-lane .flow-arrow svg{transform:rotate(90deg)}}

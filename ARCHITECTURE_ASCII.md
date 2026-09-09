@@ -1,72 +1,73 @@
 # Lumen architecture — high-level
 
+## 1. Agentic ML training
+
 ```text
-                         OFFLINE / INTERNAL (not shown to producers)
-
-  IMDb + film metadata + derived craft features
-                    |
-                    v
-       Agentic model-training loop on Google Cloud
-       (feature engineering -> model tournament ->
-        cross-validation -> champion model artifact)
-                    |
-                    v
-       Versioned hit/miss model + evaluation diagnostics
-                    |
-                    +------------------------------+
-                                                   |
-                                                   v
-PRODUCER UI                                      Cloud Run API
-  story text                                      /v1/predictions
-  images / frames  ---- HTTPS JSON + signed URIs ----+
-  classifications                                  |
-  medium + geography                               v
-                                      Gemini agent orchestrator
-                                                   |
-                         +-------------------------+-------------------------+
-                         |                         |                         |
-                         v                         v                         v
-                 Story agent              Audience agent              Visual agent
-                 script / premise         segments / affinity         frames / campaign
-                         |                         |                         |
-                         +-------------------------+-------------------------+
-                                                   |
-                                                   v
-                                           Market agent
-                                                   |
-                                                   v
-                                  Parallel Search API (live evidence)
-                                  comparables / demand / audience / timing
-                                                   |
-                                                   v
-                                         Evidence + claims
-                                                   |
-                                                   v
-                         Active hit/miss model inference + agent synthesis
-                                                   |
-                                                   v
-             outcome: hit | miss | inconclusive + score + confidence + why
-
-INTERNAL DIAGNOSTICS (separate access) ------------+
-  GET /v1/diagnostics/model
-  trainer status, active model version, last run, feature count, metrics
+Historical film data + derived creative features
+                       |
+                       v
+              Agentic training pipeline
+  Feature engineering -> candidate training -> evaluation
+            ^                                     |
+            +---- agent-guided refinement --------+
+                                                  |
+                                                  v
+                         Selected model version + feature schema
+                                  + evaluation metrics
+                                                  |
+                      Used as the runtime inference tool below
 ```
 
-## How `agentic-cinema-hack` maps into Lumen
+The training agent guides feature engineering, model selection and evaluation. We train once today using this pipeline. Automated repeat training runs are planned for the future. Training does not run as part of a user prediction request.
 
-| Existing project | Lumen role |
+## 2. Runtime recommendations
+
+```text
+Screenshots / frames / story text / project context
+                         |
+                         v
+              Cloud Run prediction API
+                         |
+                         v
+        Main Gemini agent extracts structured features
+                         |
+                         v
+          Agent chooses tools and schedules calls
+                         |
+          +--------------+----------------+
+          |              |                |
+          v              v                v
+  Trained ML tool   Comparison tool   Parallel Search API
+  Fixed model      Comparable films  Live market and
+  + valid features Feature differences audience evidence
+          |              |                |
+          +--------------+----------------+
+                         |
+                         v
+          Main agent combines selected tool results
+                         |
+                         v
+       Recommendations + reasons + evidence + uncertainty
+```
+
+These branches show available tools. The main agent selects the tools needed for each request and runs independent calls concurrently when their inputs are ready. Calls that need another tool's output wait for that result. Comparison findings, model predictions and research evidence inform the final recommendation.
+
+Training and runtime tool selection are agentic. ML inference is deterministic for the same model version and validated input features. The agent's extraction, plan and explanation may vary. Parallel Search is a research service, distinct from the agent's decision to execute calls in parallel.
+
+### Existing backend roles
+
+| Component | Role |
 | --- | --- |
-| `src/ingestion/script_parser.py` | Parse uploaded scripts into story features |
-| `src/ingestion/extract_keyframes.py` | Extract frames when a video/trailer is uploaded |
-| `src/vision/concept_inspector.py` | Visual agent / Gemini multimodal inspection |
-| `src/search/parallel_search_client.py` | Market agent’s Parallel Search tool |
-| `src/quant/agentic_trainer.py` | Offline agentic model-training pipeline |
-| `src/quant/quant_agent.py` | Model tournament and champion selection |
-| `src/quant/oracle.py` | Low-latency inference tool used by agents |
-| `src/premortem/premortem_agent.py` | Lead investigator / synthesis behavior |
-| `data/models/champion_model.joblib` | Prototype model artifact; move to a versioned Cloud Storage/Vertex registry artifact |
-| Investigation Board in `README.md` | Runtime case file containing hypotheses, claims, sources, and agent outputs |
+| `src/quant/agentic_trainer.py` | Agentic training pipeline |
+| `src/quant/quant_agent.py` | Candidate evaluation and champion selection |
+| `data/models/champion_model.joblib` | Trained model artifact used for inference |
+| `src/ingestion/script_parser.py` | Extract story features |
+| `src/ingestion/extract_keyframes.py` | Extract frames from video inputs |
+| `src/vision/concept_inspector.py` | Multimodal visual inspection |
+| `src/quant/oracle.py` | Deterministic trained-model tool |
+| `src/search/parallel_search_client.py` | Live comparison and market research |
+| `src/premortem/premortem_agent.py` | Investigation and recommendation synthesis |
 
-## Important integration gap
+These are the backend roles documented in this project, not a claim that all integrations are deployed. The comparison tool is a logical runtime capability; its implementation boundary remains to be confirmed.
 
-The existing `QuantOracle` returns expected rating, residual delta, craft verdict, vulnerabilities, and feature attributions. Lumen’s API returns `hit`, `miss`, or `inconclusive`. The backend should add a calibrated outcome layer that maps the model score and uncertainty to that contract, or retrain the champion model directly on a defined commercial-success target. Do not label an IMDb rating as a hit probability without calibration and an agreed target definition.
+The oracle's expected rating and craft residuals need a calibrated outcome adapter before they can support commercial `hit`, `miss`, or `inconclusive` labels. See [the Mermaid architecture](ARCHITECTURE_MERMAID.md) for the same flow and [the API contract](API_CONTRACT.md) for integration details.
